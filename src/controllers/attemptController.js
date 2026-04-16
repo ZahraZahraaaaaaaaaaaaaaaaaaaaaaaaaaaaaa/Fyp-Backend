@@ -4,6 +4,29 @@ const User = require('../models/User');
 const { getStepByNumber } = require('../services/scenarioHelpers');
 const { scoreToLevel, evaluateBadges } = require('../services/gamification');
 
+const POINTS_PER_CORRECT_DECISION = 5;
+
+function shuffled(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildStepOrder(scenario) {
+  const stepNumbers = (scenario.steps || []).map((s) => Number(s.stepNumber)).filter((n) => Number.isFinite(n));
+  return shuffled(stepNumbers);
+}
+
+function ensureAttemptStepOrder(attempt, scenario) {
+  if (Array.isArray(attempt.stepOrder) && attempt.stepOrder.length > 0) return;
+  attempt.stepOrder = buildStepOrder(scenario);
+  attempt.currentStepIndex = 0;
+  attempt.currentStepNumber = attempt.stepOrder[0] ?? attempt.currentStepNumber ?? 1;
+}
+
 function buildSimulationPayload(option) {
   if (option.isCorrect || !option.simulationType || option.simulationType === 'none') {
     return { showSimulation: false };
@@ -28,13 +51,15 @@ async function start(req, res) {
     return res.status(404).json({ message: 'Scenario not available' });
   }
 
-  const first = scenario.steps.reduce((min, s) => (s.stepNumber < min ? s.stepNumber : min), Infinity);
-  const startStep = scenario.steps.find((s) => s.stepNumber === first) || scenario.steps[0];
+  const stepOrder = buildStepOrder(scenario);
+  const startStepNumber = stepOrder[0] ?? 1;
 
   const attempt = await Attempt.create({
     userId: req.user._id,
     scenarioId: scenario._id,
-    currentStepNumber: startStep.stepNumber,
+    stepOrder,
+    currentStepIndex: 0,
+    currentStepNumber: startStepNumber,
     status: 'in_progress',
     startedAt: new Date(),
   });
@@ -45,6 +70,8 @@ async function start(req, res) {
       scenarioId: attempt.scenarioId,
       status: attempt.status,
       currentStepNumber: attempt.currentStepNumber,
+      currentStepIndex: attempt.currentStepIndex,
+      stepOrder: attempt.stepOrder,
       score: attempt.score,
       correctDecisions: attempt.correctDecisions,
       incorrectDecisions: attempt.incorrectDecisions,
@@ -71,6 +98,8 @@ async function submitDecision(req, res) {
   const scenario = await Scenario.findById(attempt.scenarioId);
   if (!scenario) return res.status(404).json({ message: 'Scenario missing' });
 
+  ensureAttemptStepOrder(attempt, scenario);
+
   const step = getStepByNumber(scenario, Number(stepNumber));
   if (!step) return res.status(400).json({ message: 'Invalid step' });
   if (step.stepNumber !== attempt.currentStepNumber) {
@@ -81,7 +110,7 @@ async function submitDecision(req, res) {
   if (!opt) return res.status(400).json({ message: 'Invalid option' });
 
   const isCorrect = !!opt.isCorrect;
-  const pointsEarned = isCorrect ? Number(opt.points) || 0 : 0;
+  const pointsEarned = isCorrect ? POINTS_PER_CORRECT_DECISION : 0;
 
   attempt.decisionHistory.push({
     stepNumber: step.stepNumber,
@@ -102,15 +131,10 @@ async function submitDecision(req, res) {
   }
   await user.save();
 
-  const nextNum = Number(opt.nextStepNumber);
-  const finished = step.isFinalStep || nextNum === 0;
-
+  const finished = attempt.currentStepIndex >= (attempt.stepOrder?.length || 0) - 1;
   if (!finished) {
-    const nextExists = scenario.steps.some((s) => s.stepNumber === nextNum);
-    if (!nextExists) {
-      return res.status(500).json({ message: 'Scenario data error: missing next step' });
-    }
-    attempt.currentStepNumber = nextNum;
+    attempt.currentStepIndex += 1;
+    attempt.currentStepNumber = attempt.stepOrder[attempt.currentStepIndex];
   }
 
   await attempt.save();
@@ -132,6 +156,8 @@ async function submitDecision(req, res) {
       scenarioId: attempt.scenarioId,
       status: attempt.status,
       currentStepNumber: attempt.currentStepNumber,
+      currentStepIndex: attempt.currentStepIndex,
+      stepOrder: attempt.stepOrder,
       score: attempt.score,
       correctDecisions: attempt.correctDecisions,
       incorrectDecisions: attempt.incorrectDecisions,
@@ -168,11 +194,10 @@ async function complete(req, res) {
   const scenario = await Scenario.findById(attempt.scenarioId);
   if (!scenario) return res.status(404).json({ message: 'Scenario missing' });
 
+  ensureAttemptStepOrder(attempt, scenario);
+
   const totalDecisions = attempt.decisionHistory.length;
-  const lastEntry = attempt.decisionHistory[attempt.decisionHistory.length - 1];
-  const onFinalStep = lastEntry
-    ? !!getStepByNumber(scenario, lastEntry.stepNumber)?.isFinalStep
-    : false;
+  const onFinalStep = attempt.currentStepIndex >= (attempt.stepOrder?.length || 0) - 1;
 
   const forceComplete = req.body && req.body.force === true;
 
@@ -201,6 +226,8 @@ async function complete(req, res) {
   const correct = attempt.correctDecisions;
   const accuracy = total > 0 ? correct / total : 0;
   const perfectRun = attempt.incorrectDecisions === 0 && attempt.correctDecisions > 0;
+  const maxScore = total * POINTS_PER_CORRECT_DECISION;
+  const normalizedScore = maxScore > 0 ? Math.round((attempt.score / maxScore) * 100) : 0;
 
   user.totalScore += attempt.score;
   user.level = scoreToLevel(user.totalScore);
@@ -228,6 +255,7 @@ async function complete(req, res) {
     streak: user.correctStreak,
     firstCompletion,
     scenarioJustCompleted: true,
+    normalizedScore,
   });
   user.earnedBadges = newBadges;
   await user.save();
@@ -238,6 +266,8 @@ async function complete(req, res) {
       scenarioId: attempt.scenarioId,
       status: attempt.status,
       score: attempt.score,
+      maxScore,
+      normalizedScore,
       correctDecisions: attempt.correctDecisions,
       incorrectDecisions: attempt.incorrectDecisions,
       completedAt: attempt.completedAt,

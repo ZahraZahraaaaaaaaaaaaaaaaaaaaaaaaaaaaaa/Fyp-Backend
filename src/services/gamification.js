@@ -1,28 +1,42 @@
 const BADGES = {
   FIRST_SCENARIO: 'first_scenario_completed',
+  AWARENESS_STARTER: 'awareness_starter',
   PHISHING_DETECTOR: 'phishing_detector',
+  VISHING_AWARE: 'vishing_aware',
+  BAITING_BLOCKER: 'baiting_blocker',
+  IMPERSONATION_DEFENDER: 'impersonation_defender',
   PERFECT_SCORE: 'perfect_score',
   SAFE_STREAK: 'safe_decision_streak',
-  VISHING_AWARE: 'vishing_aware',
-  BAITING_SAFE: 'baiting_safe',
-  IMPERSONATION_ALERT: 'impersonation_alert',
+  SCENARIO_MASTER: 'scenario_master',
+  SECURITY_CHAMPION: 'security_champion',
 };
 
 function scoreToLevel(totalScore) {
+  // Scoring is 5 points per correct decision; keep levels meaningful for demo pacing.
   if (totalScore < 50) return 1;
-  if (totalScore < 150) return 2;
-  if (totalScore < 300) return 3;
-  if (totalScore < 500) return 4;
-  if (totalScore < 800) return 5;
-  return 6 + Math.floor((totalScore - 800) / 400);
+  if (totalScore < 125) return 2;
+  if (totalScore < 225) return 3;
+  if (totalScore < 350) return 4;
+  if (totalScore < 500) return 5;
+  return 6 + Math.floor((totalScore - 500) / 250);
 }
 
 function evaluateBadges(user, context) {
   const badges = new Set(user.earnedBadges || []);
-  const { scenarioType, perfectRun, streak, firstCompletion, scenarioJustCompleted } = context;
+  const {
+    scenarioType,
+    perfectRun,
+    streak,
+    firstCompletion,
+    scenarioJustCompleted,
+    normalizedScore,
+  } = context;
 
   if (firstCompletion) {
     badges.add(BADGES.FIRST_SCENARIO);
+  }
+  if ((user.completedScenarios || []).length >= 1) {
+    badges.add(BADGES.AWARENESS_STARTER);
   }
   if (perfectRun) {
     badges.add(BADGES.PERFECT_SCORE);
@@ -37,10 +51,16 @@ function evaluateBadges(user, context) {
     badges.add(BADGES.VISHING_AWARE);
   }
   if (scenarioJustCompleted && scenarioType === 'baiting') {
-    badges.add(BADGES.BAITING_SAFE);
+    badges.add(BADGES.BAITING_BLOCKER);
   }
   if (scenarioJustCompleted && scenarioType === 'impersonation') {
-    badges.add(BADGES.IMPERSONATION_ALERT);
+    badges.add(BADGES.IMPERSONATION_DEFENDER);
+  }
+  if ((user.completedScenarios || []).length >= 5) {
+    badges.add(BADGES.SCENARIO_MASTER);
+  }
+  if ((normalizedScore || 0) >= 90 && (user.totalScore || 0) >= 250) {
+    badges.add(BADGES.SECURITY_CHAMPION);
   }
 
   return [...badges];

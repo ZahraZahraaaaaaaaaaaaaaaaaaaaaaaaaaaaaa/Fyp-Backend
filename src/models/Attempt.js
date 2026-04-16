@@ -27,6 +27,13 @@ const attemptSchema = new mongoose.Schema(
     startedAt: { type: Date, default: Date.now },
     completedAt: { type: Date },
     currentStepNumber: { type: Number, default: 1 },
+    /**
+     * Stable per-attempt randomized order of stepNumbers.
+     * Enables reshuffling on replay while keeping order fixed during a playthrough.
+     */
+    stepOrder: [{ type: Number }],
+    /** Index into stepOrder for the current step */
+    currentStepIndex: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
