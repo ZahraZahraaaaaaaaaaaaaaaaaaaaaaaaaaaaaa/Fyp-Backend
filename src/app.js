@@ -48,6 +48,16 @@ app.use(
 );
 app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
+app.get("/", (req, res) => {
+  res.json({
+    message: "FYP backend is running",
+    health: "/health"
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", service: "social-engineering-training-api" });
+});
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'social-engineering-training-api' });
