@@ -38,14 +38,27 @@ function corsOrigin(origin, callback) {
 }
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(
-  cors({
-    origin: corsOrigin,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+const cors = require("cors");
+
+const allowedOrigins = [
+  "https://fyp-frontend-six-xi.vercel.app",
+  "https://fyp-frontend-54si8t0m1-zahrafarooq09-8279s-projects.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.get("/", (req, res) => {
