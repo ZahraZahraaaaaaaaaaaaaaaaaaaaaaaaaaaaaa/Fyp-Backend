@@ -8,8 +8,11 @@ const scenarioRoutes = require("./routes/scenarioRoutes");
 const attemptRoutes = require("./routes/attemptRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const { connectDB } = require("./config/db");
 
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
@@ -22,7 +25,9 @@ app.use(cors({
 
 app.options("*", cors());
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/", (req, res) => {
@@ -37,6 +42,15 @@ app.get("/health", (req, res) => {
     status: "ok",
     service: "social-engineering-training-api"
   });
+});
+
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.use("/api/auth", authRoutes);
