@@ -3,6 +3,19 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
 
+function serializeUser(user) {
+  return {
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    totalScore: user.totalScore ?? 0,
+    level: user.level ?? 1,
+    earnedBadges: user.earnedBadges || [],
+    completedScenarios: (user.completedScenarios || []).map((id) => String(id)),
+  };
+}
+
 function signToken(userId) {
   return jwt.sign({}, process.env.JWT_SECRET, {
     subject: String(userId),
@@ -30,15 +43,7 @@ async function register(req, res) {
   const token = signToken(user._id);
   return res.status(201).json({
     token,
-    user: {
-      id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-      totalScore: user.totalScore,
-      level: user.level,
-      earnedBadges: user.earnedBadges,
-    },
+    user: serializeUser(user),
   });
 }
 
@@ -59,15 +64,7 @@ async function login(req, res) {
   const token = signToken(user._id);
   return res.json({
     token,
-    user: {
-      id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-      totalScore: user.totalScore,
-      level: user.level,
-      earnedBadges: user.earnedBadges,
-    },
+    user: serializeUser(user),
   });
 }
 
@@ -75,14 +72,7 @@ async function me(req, res) {
   const user = await User.findById(req.user._id).select('-passwordHash');
   if (!user) return res.status(404).json({ message: 'User not found' });
   return res.json({
-    id: user._id,
-    fullName: user.fullName,
-    email: user.email,
-    role: user.role,
-    totalScore: user.totalScore,
-    level: user.level,
-    earnedBadges: user.earnedBadges,
-    completedScenarios: user.completedScenarios,
+    ...serializeUser(user),
     createdAt: user.createdAt,
   });
 }

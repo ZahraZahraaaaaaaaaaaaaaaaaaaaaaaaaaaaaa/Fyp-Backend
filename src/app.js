@@ -8,6 +8,7 @@ const scenarioRoutes = require("./routes/scenarioRoutes");
 const attemptRoutes = require("./routes/attemptRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const { connectDB } = require("./config/db");
 
 const app = express();
@@ -58,6 +59,7 @@ app.use("/api/scenarios", scenarioRoutes);
 app.use("/api/attempts", attemptRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
