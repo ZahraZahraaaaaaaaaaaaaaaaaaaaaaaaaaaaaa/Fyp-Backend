@@ -48,6 +48,17 @@ function badgeDisplayName(badgeId) {
   return BADGE_DISPLAY_NAMES[badgeId] || badgeId.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function serializeNotification(doc) {
+  return {
+    id: doc._id,
+    title: doc.title,
+    message: doc.message,
+    type: doc.type,
+    isRead: doc.isRead,
+    createdAt: doc.createdAt,
+  };
+}
+
 async function createNotification({ userId, title, message, type, staticKey = null }) {
   if (staticKey) {
     const existing = await Notification.findOne({ userId, staticKey });
@@ -99,62 +110,70 @@ async function ensureStaticNotifications(userId) {
 }
 
 async function notifyScenarioCompleted(userId, scenarioTitle) {
-  await createNotification({
+  const doc = await createNotification({
     userId,
     type: 'scenario_completed',
     title: 'Scenario Completed',
     message: `You successfully completed ${scenarioTitle}.`,
   });
+  return serializeNotification(doc);
 }
 
 async function notifyLevelUp(userId, level) {
-  await createNotification({
+  const doc = await createNotification({
     userId,
     type: 'level_up',
     title: 'Level Up',
     message: `You reached Level ${level}.`,
   });
+  return serializeNotification(doc);
 }
 
 async function notifyBadgeEarned(userId, badgeId) {
   const name = badgeDisplayName(badgeId);
-  await createNotification({
+  const doc = await createNotification({
     userId,
     type: 'badge_earned',
     title: 'New Badge Unlocked',
     message: `You earned the ${name} badge.`,
   });
+  return serializeNotification(doc);
 }
 
 async function notifyAchievementUnlocked(userId) {
-  await createNotification({
+  const doc = await createNotification({
     userId,
     type: 'achievement_unlocked',
     title: 'Achievement Unlocked',
     message: 'You unlocked a new achievement.',
   });
+  return serializeNotification(doc);
 }
 
 async function notifyBadgesEarned(userId, newBadgeIds) {
+  const created = [];
   for (const badgeId of newBadgeIds) {
     if (ACHIEVEMENT_BADGE_IDS.has(badgeId)) {
-      await notifyAchievementUnlocked(userId);
+      created.push(await notifyAchievementUnlocked(userId));
     } else {
-      await notifyBadgeEarned(userId, badgeId);
+      created.push(await notifyBadgeEarned(userId, badgeId));
     }
   }
+  return created;
 }
 
 async function notifyAfterAttemptComplete(userId, { scenarioTitle, previousLevel, newLevel, previousBadges, newBadges }) {
-  await notifyScenarioCompleted(userId, scenarioTitle);
+  const created = [];
+  created.push(await notifyScenarioCompleted(userId, scenarioTitle));
   if (newLevel > previousLevel) {
-    await notifyLevelUp(userId, newLevel);
+    created.push(await notifyLevelUp(userId, newLevel));
   }
   const prev = new Set(previousBadges || []);
   const earned = (newBadges || []).filter((id) => !prev.has(id));
   if (earned.length > 0) {
-    await notifyBadgesEarned(userId, earned);
+    created.push(...(await notifyBadgesEarned(userId, earned)));
   }
+  return created;
 }
 
 module.exports = {

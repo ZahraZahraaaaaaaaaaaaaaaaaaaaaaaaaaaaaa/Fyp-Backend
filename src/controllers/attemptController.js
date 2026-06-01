@@ -215,7 +215,7 @@ async function complete(req, res) {
 
   if (attempt.status === 'completed') {
     const user = await User.findById(req.user._id).select('-passwordHash');
-    return res.json({ attempt, user, alreadyCompleted: true });
+    return res.json({ attempt, user, alreadyCompleted: true, newNotifications: [] });
   }
 
   attempt.status = 'completed';
@@ -263,7 +263,7 @@ async function complete(req, res) {
   user.earnedBadges = newBadges;
   await user.save();
 
-  await notifyAfterAttemptComplete(user._id, {
+  const newNotifications = await notifyAfterAttemptComplete(user._id, {
     scenarioTitle: scenario.title,
     previousLevel,
     newLevel: user.level,
@@ -300,6 +300,7 @@ async function complete(req, res) {
       completedScenarios: user.completedScenarios,
       correctStreak: user.correctStreak,
     },
+    newNotifications,
   });
 }
 
