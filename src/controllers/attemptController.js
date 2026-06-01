@@ -3,6 +3,7 @@ const Scenario = require('../models/Scenario');
 const User = require('../models/User');
 const { getStepByNumber } = require('../services/scenarioHelpers');
 const { scoreToLevel, evaluateBadges } = require('../services/gamification');
+const { notifyAfterAttemptComplete } = require('../services/notificationService');
 
 const POINTS_PER_CORRECT_DECISION = 5;
 
@@ -222,6 +223,8 @@ async function complete(req, res) {
   await attempt.save();
 
   const user = await User.findById(req.user._id);
+  const previousLevel = user.level;
+  const previousBadges = [...(user.earnedBadges || [])];
   const total = scenario.steps.length;
   const correct = attempt.correctDecisions;
   const accuracy = total > 0 ? correct / total : 0;
@@ -259,6 +262,14 @@ async function complete(req, res) {
   });
   user.earnedBadges = newBadges;
   await user.save();
+
+  await notifyAfterAttemptComplete(user._id, {
+    scenarioTitle: scenario.title,
+    previousLevel,
+    newLevel: user.level,
+    previousBadges,
+    newBadges: user.earnedBadges,
+  });
 
   return res.json({
     attempt: {

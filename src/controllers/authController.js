@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const { ensureStaticNotifications } = require('../services/notificationService');
 
 function serializeUser(user) {
   return {
@@ -40,6 +41,7 @@ async function register(req, res) {
     passwordHash,
     role: 'user',
   });
+  await ensureStaticNotifications(user._id);
   const token = signToken(user._id);
   return res.status(201).json({
     token,

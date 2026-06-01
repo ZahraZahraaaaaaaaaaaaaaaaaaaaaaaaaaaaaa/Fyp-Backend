@@ -8,6 +8,7 @@ const scenarioRoutes = require("./routes/scenarioRoutes");
 const attemptRoutes = require("./routes/attemptRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const { connectDB } = require("./config/db");
 
@@ -59,6 +60,7 @@ app.use("/api/scenarios", scenarioRoutes);
 app.use("/api/attempts", attemptRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 app.use((req, res) => {
