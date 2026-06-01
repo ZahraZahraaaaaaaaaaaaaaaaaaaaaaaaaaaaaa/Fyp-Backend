@@ -9,18 +9,16 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        'badge_earned',
-        'scenario_completed',
-        'level_up',
-        'daily_challenge',
-        'training_reminder',
-        'security_tip',
         'welcome',
-        'badges_progress',
+        'reminder',
+        'scenario_completed',
+        'badge_earned',
+        'achievement_unlocked',
+        'level_up',
       ],
     },
     isRead: { type: Boolean, default: false },
-    /** Dedupes static notifications per user */
+    /** Dedupes onboarding notifications per user */
     staticKey: { type: String, default: null },
   },
   { timestamps: true }

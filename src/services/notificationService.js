@@ -13,37 +13,35 @@ const BADGE_DISPLAY_NAMES = {
   security_champion: 'Security Champion',
 };
 
-const STATIC_NOTIFICATIONS = [
+const ACHIEVEMENT_BADGE_IDS = new Set(['scenario_master', 'security_champion']);
+
+const ONBOARDING_NOTIFICATIONS = [
   {
     staticKey: 'welcome',
     type: 'welcome',
     title: 'Welcome to SecureLearn',
-    message: 'Welcome to SecureLearn. Start your cybersecurity awareness journey.',
-  },
-  {
-    staticKey: 'badges_progress',
-    type: 'badges_progress',
-    title: 'Unlock More Badges',
-    message: 'Complete more modules to unlock new badges.',
+    message: 'Start your cybersecurity awareness journey.',
   },
   {
     staticKey: 'training_reminder',
-    type: 'training_reminder',
+    type: 'reminder',
     title: 'Training Reminder',
-    message: 'You have pending training modules waiting.',
+    message: 'Complete your first scenario to begin earning badges.',
   },
-  {
-    staticKey: 'daily_challenge',
-    type: 'daily_challenge',
-    title: 'Daily Challenge Available',
-    message: 'Complete 2 scenarios today to earn bonus XP.',
-  },
-  {
-    staticKey: 'security_tip',
-    type: 'security_tip',
-    title: 'Security Tip of the Day',
-    message: 'Always verify sender domains before clicking email links.',
-  },
+];
+
+/** Legacy static keys/types removed from onboarding */
+const OBSOLETE_STATIC_KEYS = [
+  'badges_progress',
+  'daily_challenge',
+  'security_tip',
+];
+
+const OBSOLETE_TYPES = [
+  'daily_challenge',
+  'training_reminder',
+  'security_tip',
+  'badges_progress',
 ];
 
 function badgeDisplayName(badgeId) {
@@ -65,22 +63,37 @@ async function createNotification({ userId, title, message, type, staticKey = nu
   });
 }
 
+async function removeObsoleteNotifications(userId) {
+  await Notification.deleteMany({
+    userId,
+    $or: [{ staticKey: { $in: OBSOLETE_STATIC_KEYS } }, { type: { $in: OBSOLETE_TYPES } }],
+  });
+}
+
 async function ensureStaticNotifications(userId) {
+  await removeObsoleteNotifications(userId);
+
   const base = Date.now();
-  let offset = STATIC_NOTIFICATIONS.length;
-  for (const item of STATIC_NOTIFICATIONS) {
-    const exists = await Notification.findOne({ userId, staticKey: item.staticKey });
-    if (!exists) {
-      await Notification.create({
-        userId,
-        title: item.title,
-        message: item.message,
-        type: item.type,
-        staticKey: item.staticKey,
-        isRead: false,
-        createdAt: new Date(base - offset * 3600000),
-      });
-    }
+  let offset = ONBOARDING_NOTIFICATIONS.length;
+  for (const item of ONBOARDING_NOTIFICATIONS) {
+    const createdAt = new Date(base - offset * 60000);
+    await Notification.findOneAndUpdate(
+      { userId, staticKey: item.staticKey },
+      {
+        $set: {
+          title: item.title,
+          message: item.message,
+          type: item.type,
+        },
+        $setOnInsert: {
+          userId,
+          staticKey: item.staticKey,
+          isRead: false,
+          createdAt,
+        },
+      },
+      { upsert: true, new: true }
+    );
     offset -= 1;
   }
 }
@@ -90,7 +103,7 @@ async function notifyScenarioCompleted(userId, scenarioTitle) {
     userId,
     type: 'scenario_completed',
     title: 'Scenario Completed',
-    message: `You completed ${scenarioTitle}.`,
+    message: `You successfully completed ${scenarioTitle}.`,
   });
 }
 
@@ -103,15 +116,32 @@ async function notifyLevelUp(userId, level) {
   });
 }
 
+async function notifyBadgeEarned(userId, badgeId) {
+  const name = badgeDisplayName(badgeId);
+  await createNotification({
+    userId,
+    type: 'badge_earned',
+    title: 'New Badge Unlocked',
+    message: `You earned the ${name} badge.`,
+  });
+}
+
+async function notifyAchievementUnlocked(userId) {
+  await createNotification({
+    userId,
+    type: 'achievement_unlocked',
+    title: 'Achievement Unlocked',
+    message: 'You unlocked a new achievement.',
+  });
+}
+
 async function notifyBadgesEarned(userId, newBadgeIds) {
   for (const badgeId of newBadgeIds) {
-    const name = badgeDisplayName(badgeId);
-    await createNotification({
-      userId,
-      type: 'badge_earned',
-      title: 'New Badge Unlocked',
-      message: `You earned the ${name} badge.`,
-    });
+    if (ACHIEVEMENT_BADGE_IDS.has(badgeId)) {
+      await notifyAchievementUnlocked(userId);
+    } else {
+      await notifyBadgeEarned(userId, badgeId);
+    }
   }
 }
 
