@@ -3,70 +3,224 @@
 const sim = {
   phish: {
     type: 'phishing_alert',
-    title: 'Account security alert',
+    title: 'Credentials captured',
     lines: [
-      'Your account has been compromised.',
-      'Unauthorized login detected from an unknown device.',
-      'Session tokens may have been stolen.',
+      'Your login credentials were submitted to a fake portal.',
+      'The attacker now has access to your username and password.',
+      'Your account may already be compromised.',
     ],
   },
   unauth: {
     type: 'unauthorized_login',
     title: 'Unauthorized access detected',
     lines: [
-      'Multiple failed verification attempts.',
-      'Your credentials were used from a suspicious location.',
+      'An attacker logged into your account from an unrecognized device.',
+      'Sessions may have been hijacked — immediate password reset required.',
     ],
   },
   lock: {
     type: 'system_lock',
-    title: 'SYSTEM LOCKED',
+    title: 'System locked',
     lines: [
-      'Unauthorized activity detected.',
-      'Your workstation has been isolated from the network.',
-      'Contact security — do not power off.',
+      'Unauthorized activity detected on your workstation.',
+      'Your device has been isolated from the corporate network.',
+      'Contact your security team — do not power off.',
     ],
   },
   ransom: {
     type: 'ransomware',
-    title: 'YOUR FILES ARE ENCRYPTED',
+    title: 'Files encrypted',
     lines: [
       'All documents on this device have been encrypted.',
       'Recovery requires authorization from the attacker.',
-      'Security breach triggered by unsafe action.',
+      'This breach was triggered by executing an untrusted file.',
     ],
   },
   exfil: {
     type: 'data_exfiltration',
-    title: 'Sensitive data transmitted',
+    title: 'Data sent externally',
     lines: [
-      'Sensitive data has been sent successfully.',
-      'External transfer completed to unknown recipient.',
+      'Internal data was transmitted to an external, unknown recipient.',
+      'Sensitive information may now be in the attacker\'s hands.',
     ],
   },
   malware: {
     type: 'malware',
-    title: 'Malware detected',
+    title: 'Malware installed',
     lines: [
-      'Malware detected on this system.',
+      'Malicious software has been installed on this device.',
       'A security breach was triggered by the last action.',
-      'Automatic containment has started.',
+      'Automatic containment has started — IT has been alerted.',
     ],
   },
   vish: {
     type: 'vishing_breach',
-    title: 'Voice verification failed',
+    title: 'Account codes disclosed',
     lines: [
-      'Caller identity could not be verified.',
-      'Your account recovery codes may have been disclosed.',
+      'Sensitive codes were shared with an unverified caller.',
+      'The attacker may now have access to your account.',
     ],
   },
   imp: {
     type: 'impersonation_success',
-    title: 'Transfer initiated',
+    title: 'Fraud completed',
     lines: [
-      'Wire transfer request accepted.',
-      'Funds routing to external account.',
+      'The attacker\'s request was fulfilled without verification.',
+      'Money or access has been handed to a malicious actor.',
+    ],
+  },
+  // New contextual simulation types below
+  gift_card_sent: {
+    type: 'impersonation_success',
+    title: 'Gift cards purchased and sent',
+    lines: [
+      'Gift card codes were sent to the attacker\'s number.',
+      'These funds are unrecoverable — the scam succeeded.',
+      'Your "manager" was never involved — this was a stranger.',
+    ],
+  },
+  channel_switch: {
+    type: 'impersonation_success',
+    title: 'Oversight bypassed',
+    lines: [
+      'You moved to an unmonitored channel as the attacker requested.',
+      'With no oversight, the attacker continued the scam undetected.',
+      'Channel-switching is a deliberate tactic to avoid being stopped.',
+    ],
+  },
+  spread_ignored: {
+    type: 'unauthorized_login',
+    title: 'Attack spread to the whole team',
+    lines: [
+      'You did not share the warning — three colleagues also ignored the same alert.',
+      'The attacker targeted the entire team without resistance.',
+      'Silence helped the scam succeed at scale.',
+    ],
+  },
+  directory_leaked: {
+    type: 'data_exfiltration',
+    title: 'Internal directory exposed',
+    lines: [
+      'Your internal employee directory was sent to the attacker.',
+      'This data enables targeted follow-on attacks against your colleagues.',
+    ],
+  },
+  wire_sent: {
+    type: 'impersonation_success',
+    title: 'Wire transfer completed',
+    lines: [
+      'A fraudulent wire transfer was processed without verification.',
+      'Funds are routing to an attacker-controlled account.',
+      'Wire fraud is typically unrecoverable once sent.',
+    ],
+  },
+  partial_codes: {
+    type: 'impersonation_success',
+    title: 'Partial disclosure enabled fraud',
+    lines: [
+      'Even partial gift card codes gave the attacker enough to redeem them.',
+      'Partial disclosure is still a loss — there is no "safe" amount to share.',
+    ],
+  },
+  incident_silenced: {
+    type: 'unauthorized_login',
+    title: 'Incident went unreported',
+    lines: [
+      'By staying silent, the attacker\'s indicators were never logged.',
+      'The same tactic was used on two more colleagues the next day.',
+      'Under-reporting is one of the biggest amplifiers of social engineering.',
+    ],
+  },
+  scammer_engaged: {
+    type: 'data_exfiltration',
+    title: 'More information leaked',
+    lines: [
+      'By engaging the scammer, you revealed your name, role, and work schedule.',
+      'Attackers use re-engagement to gather intelligence for future attacks.',
+    ],
+  },
+  usb_malware: {
+    type: 'malware',
+    title: 'Malware deployed from USB',
+    lines: [
+      'The USB executed a script the moment it was connected.',
+      'Keylogging and file-scraping malware is now running silently.',
+      'This device and its network neighbors are at risk.',
+    ],
+  },
+  usb_ransomware: {
+    type: 'ransomware',
+    title: 'Ransomware deployed from USB',
+    lines: [
+      'Opening the USB triggered an autorun ransomware payload.',
+      'Files on this machine are being encrypted right now.',
+      'Disconnect immediately and notify security.',
+    ],
+  },
+  portal_leaked: {
+    type: 'data_exfiltration',
+    title: 'Internal data harvested',
+    lines: [
+      'Tax ID, cost center, and vendor data were sent to the attacker.',
+      'This information supports deeper financial fraud against your organization.',
+    ],
+  },
+  invoice_paid: {
+    type: 'impersonation_success',
+    title: 'Payment sent to fraudulent account',
+    lines: [
+      'The invoice was paid to an attacker-controlled account.',
+      'The real vendor never received the funds.',
+      'Invoice fraud payments are rarely recoverable.',
+    ],
+  },
+  no_doc: {
+    type: 'unauthorized_login',
+    title: 'Incident went undocumented',
+    lines: [
+      'Without documentation, the security team had no indicators to act on.',
+      'The same fraudulent account targeted another vendor the following week.',
+    ],
+  },
+  dl_malware: {
+    type: 'malware',
+    title: 'Malware installed from download',
+    lines: [
+      'The recruiter\'s file contained a remote-access trojan.',
+      'An attacker now has persistent access to this device.',
+      'All keystrokes and files on this machine may be monitored.',
+    ],
+  },
+  av_disabled_ransom: {
+    type: 'ransomware',
+    title: 'Ransomware executed undetected',
+    lines: [
+      'With antivirus disabled, the malware ran without any warnings.',
+      'Files are now encrypted and a ransom note has appeared.',
+    ],
+  },
+  smishing_creds: {
+    type: 'phishing_alert',
+    title: 'Credentials submitted to fake portal',
+    lines: [
+      'You entered your password on a site controlled by the attacker.',
+      'Your work account credentials are now compromised.',
+    ],
+  },
+  unknown_device: {
+    type: 'unauthorized_login',
+    title: 'Unauthorized device session active',
+    lines: [
+      'An unrecognized device retains active session access to your account.',
+      'The attacker can act as you at any time — revoke this session immediately.',
+    ],
+  },
+  sms_spread: {
+    type: 'data_exfiltration',
+    title: 'Phishing link spread further',
+    lines: [
+      'By forwarding the SMS to your group chat, the phishing link reached 14 more people.',
+      'Three colleagues clicked the link before IT could issue a warning.',
     ],
   },
 };
@@ -101,6 +255,7 @@ function right(optText, feedback, next, points = 5) {
 }
 
 module.exports = [
+  // ─── SCENARIO 1: HR Bonus Phishing ────────────────────────────────────────
   {
     title: 'Urgent: HR bonus payout — verify today',
     type: 'phishing',
@@ -113,17 +268,7 @@ module.exports = [
       {
         stepNumber: 1,
         contextLabel: 'Inbox',
-        content: `From: hr-rewards@company-updates.net (display name: HR Department)
-Subject: ACTION REQUIRED: Bonus confirmation within 2 hours
-
-Dear employee,
-
-Due to payroll alignment, you must confirm your direct deposit details to receive today's bonus. This link expires in 120 minutes.
-
-[Verify payroll] (link shortened: bit.ly/hr-bonus-now)
-
-Thanks,
-HR`,
+        content: `From: hr-rewards@company-updates.net (display name: HR Department)\nSubject: ACTION REQUIRED: Bonus confirmation within 2 hours\n\nDear employee,\n\nDue to payroll alignment, you must confirm your direct deposit details to receive today's bonus. This link expires in 120 minutes.\n\n[Verify payroll] (link shortened: bit.ly/hr-bonus-now)\n\nThanks,\nHR`,
         isFinalStep: false,
         options: [
           right(
@@ -182,7 +327,7 @@ HR`,
             'Forward the email to your personal address "for backup."',
             'Spreading phishing content increases exposure and may leak headers or metadata.',
             4,
-            'unauth'
+            'exfil'
           ),
         ],
       },
@@ -199,7 +344,7 @@ HR`,
             5
           ),
           wrong(
-            'Ignore the mismatch because the email “looks official.”',
+            'Ignore the mismatch because the email "looks official."',
             'Branding is easy to fake. Domain mismatch is a core indicator of phishing.',
             5,
             'phish'
@@ -302,12 +447,14 @@ HR`,
             'Assume phishing is an IT problem and ignore future reminders.',
             'Awareness is a shared responsibility; ignoring guidance increases risk.',
             0,
-            'unauth'
+            'incident_silenced'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 2: CEO Wire Transfer ────────────────────────────────────────
   {
     title: 'CEO asks for an urgent wire transfer',
     type: 'impersonation',
@@ -320,12 +467,7 @@ HR`,
       {
         stepNumber: 1,
         contextLabel: 'Email',
-        content: `From: ceo@company-corp-mail.com
-Subject: STRICTLY CONFIDENTIAL — Wire today
-
-I am in meetings and unreachable by phone. Please initiate a wire of $48,200 to the attached account for the NDA escrow. This cannot wait.
-
-Sent from my iPhone`,
+        content: `From: ceo@company-corp-mail.com\nSubject: STRICTLY CONFIDENTIAL — Wire today\n\nI am in meetings and unreachable by phone. Please initiate a wire of $48,200 to the attached account for the NDA escrow. This cannot wait.\n\nSent from my iPhone`,
         isFinalStep: false,
         options: [
           right(
@@ -338,13 +480,13 @@ Sent from my iPhone`,
             'Reply with "Sure, sending now" and ask for account details.',
             'You engaged the attacker and signaled willingness to move money.',
             2,
-            'imp'
+            'wire_sent'
           ),
           wrong(
             'Forward to finance and approve because the tone sounds like the CEO.',
             'Tone alone is not authentication. Domain mismatch is a major red flag.',
             2,
-            'exfil'
+            'wire_sent'
           ),
         ],
       },
@@ -364,7 +506,7 @@ Sent from my iPhone`,
             'Tell finance to process quickly to avoid upsetting leadership.',
             'Pressure bypasses controls — exactly what attackers want.',
             3,
-            'imp'
+            'wire_sent'
           ),
         ],
       },
@@ -384,7 +526,7 @@ Sent from my iPhone`,
             'Delete everything silently so nobody thinks you almost fell for it.',
             'Silence hides indicators. Safe reporting is encouraged and improves defenses.',
             4,
-            'unauth'
+            'incident_silenced'
           ),
         ],
       },
@@ -404,7 +546,7 @@ Sent from my iPhone`,
             'Bypass policy because the request claims to be confidential.',
             'Confidentiality is commonly used to isolate victims and bypass controls.',
             5,
-            'imp'
+            'wire_sent'
           ),
         ],
       },
@@ -424,7 +566,7 @@ Sent from my iPhone`,
             'Assume it is a temporary mobile domain used by leadership.',
             'Assumptions are risky. Verify using known channels, not guesswork.',
             6,
-            'exfil'
+            'wire_sent'
           ),
         ],
       },
@@ -432,7 +574,7 @@ Sent from my iPhone`,
         stepNumber: 6,
         contextLabel: 'Attachment pressure',
         content:
-          'The email includes an attachment named `Escrow_Details.pdf` and asks you to “process immediately.”',
+          'The email includes an attachment named `Escrow_Details.pdf` and asks you to "process immediately."',
         isFinalStep: false,
         options: [
           right(
@@ -464,7 +606,7 @@ Sent from my iPhone`,
             'Message the same email thread asking for confirmation.',
             'Staying in the attacker-controlled channel does not verify identity.',
             8,
-            'imp'
+            'wire_sent'
           ),
         ],
       },
@@ -472,7 +614,7 @@ Sent from my iPhone`,
         stepNumber: 8,
         contextLabel: 'Escalation',
         content:
-          'Finance asks if they should proceed. You’re under time pressure and multiple people are watching.',
+          'Finance asks if they should proceed. You\'re under time pressure and multiple people are watching.',
         isFinalStep: false,
         options: [
           right(
@@ -484,7 +626,7 @@ Sent from my iPhone`,
             'Tell them to proceed and fix it later if wrong.',
             'Fraudulent wires are typically unrecoverable once sent.',
             9,
-            'imp'
+            'wire_sent'
           ),
         ],
       },
@@ -501,15 +643,17 @@ Sent from my iPhone`,
             0
           ),
           wrong(
-            'Rely on “gut feel” next time to decide quickly.',
+            'Rely on "gut feel" next time to decide quickly.',
             'Attackers exploit intuition; controls and verification are safer.',
             0,
-            'unauth'
+            'wire_sent'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 3: Vishing ──────────────────────────────────────────────────
   {
     title: 'IT support "verification" phone call',
     type: 'vishing',
@@ -561,7 +705,7 @@ Sent from my iPhone`,
             'Call the scammer back to argue.',
             'Re-engaging can leak more information or enable harassment.',
             3,
-            'vish'
+            'scammer_engaged'
           ),
         ],
       },
@@ -581,7 +725,7 @@ Sent from my iPhone`,
             'Say "nothing" to avoid looking careless.',
             'Under-reporting slows collective learning.',
             4,
-            'unauth'
+            'incident_silenced'
           ),
         ],
       },
@@ -589,7 +733,7 @@ Sent from my iPhone`,
         stepNumber: 4,
         contextLabel: 'Caller verification',
         content:
-          'The caller claims to have your employee ID and office location to “prove” they are IT.',
+          'The caller claims to have your employee ID and office location to "prove" they are IT.',
         isFinalStep: false,
         options: [
           right(
@@ -609,7 +753,7 @@ Sent from my iPhone`,
         stepNumber: 5,
         contextLabel: 'MFA reset request',
         content:
-          'They ask you to “confirm” by reading a code sent to your phone or email.',
+          'They ask you to "confirm" by reading a code sent to your phone or email.',
         isFinalStep: false,
         options: [
           right(
@@ -618,7 +762,7 @@ Sent from my iPhone`,
             6
           ),
           wrong(
-            'Read the code to speed up the “reset.”',
+            'Read the code to speed up the "reset."',
             'That code can be used to bypass MFA and access your account.',
             6,
             'vish'
@@ -638,7 +782,7 @@ Sent from my iPhone`,
             7
           ),
           wrong(
-            'Ignore the portal because “IT already called.”',
+            'Ignore the portal because "IT already called."',
             'Skipping verification removes an important control.',
             7,
             'unauth'
@@ -658,7 +802,7 @@ Sent from my iPhone`,
             8
           ),
           wrong(
-            'Share the full MFA codes you received “for analysis.”',
+            'Share the full MFA codes you received "for analysis."',
             'Never share secrets; security teams do not need your live codes.',
             8,
             'unauth'
@@ -687,6 +831,8 @@ Sent from my iPhone`,
       },
     ],
   },
+
+  // ─── SCENARIO 4: USB Baiting ──────────────────────────────────────────────
   {
     title: 'USB drive labeled "Q4_Salaries" in the parking lot',
     type: 'baiting',
@@ -711,13 +857,13 @@ Sent from my iPhone`,
             'Plug it into your work laptop to see if it belongs to someone internal.',
             'Unknown media can deploy malware or steal data.',
             2,
-            'malware'
+            'usb_malware'
           ),
           wrong(
             'Plug it into a personal laptop first "to be safe."',
             'Malware can still spread or phone home; also risky data handling.',
             2,
-            'malware'
+            'usb_malware'
           ),
         ],
       },
@@ -737,7 +883,7 @@ Sent from my iPhone`,
             'Open the USB on an air-gapped machine without telling anyone.',
             'Air-gap mistakes still happen; policy exists for a reason.',
             3,
-            'ransom'
+            'usb_ransomware'
           ),
         ],
       },
@@ -757,7 +903,7 @@ Sent from my iPhone`,
             'Assume IT is exaggerating and keep a copy "just in case."',
             'Duplicating untrusted media increases risk.',
             4,
-            'malware'
+            'usb_malware'
           ),
         ],
       },
@@ -765,7 +911,7 @@ Sent from my iPhone`,
         stepNumber: 4,
         contextLabel: 'Device handling',
         content:
-          'A coworker suggests plugging the USB into a meeting-room PC “because it isn’t your laptop.”',
+          'A coworker suggests plugging the USB into a meeting-room PC "because it isn\'t your laptop."',
         isFinalStep: false,
         options: [
           right(
@@ -774,10 +920,10 @@ Sent from my iPhone`,
             5
           ),
           wrong(
-            'Agree because it’s not your primary workstation.',
-            'Malware can spread laterally; “not my device” is not a protection.',
+            'Agree because it\'s not your primary workstation.',
+            'Malware can spread laterally; "not my device" is not a protection.',
             5,
-            'malware'
+            'usb_malware'
           ),
         ],
       },
@@ -785,7 +931,7 @@ Sent from my iPhone`,
         stepNumber: 5,
         contextLabel: 'Social pressure',
         content:
-          'Someone says, “But the label says Salaries — we should return it to HR fast.”',
+          'Someone says, "But the label says Salaries — we should return it to HR fast."',
         isFinalStep: false,
         options: [
           right(
@@ -797,7 +943,7 @@ Sent from my iPhone`,
             'Take it to HR and ask them to open it to identify the owner.',
             'That increases risk and spreads handling to more people.',
             6,
-            'ransom'
+            'usb_ransomware'
           ),
         ],
       },
@@ -817,7 +963,7 @@ Sent from my iPhone`,
             'Skip documentation to save time.',
             'Missing context reduces the ability to respond and learn.',
             7,
-            'unauth'
+            'incident_silenced'
           ),
         ],
       },
@@ -857,12 +1003,14 @@ Sent from my iPhone`,
             'Assume physical threats are rare and ignore the guidance.',
             'Physical access is a real risk, especially in shared spaces.',
             0,
-            'malware'
+            'usb_malware'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 5: WhatsApp Manager Impersonation ───────────────────────────
   {
     title: 'WhatsApp message from "your manager"',
     type: 'impersonation',
@@ -887,7 +1035,7 @@ Sent from my iPhone`,
             'Buy the cards to be helpful and keep the receipt.',
             'Money is often unrecoverable once codes are sent.',
             2,
-            'imp'
+            'gift_card_sent'
           ),
         ],
       },
@@ -907,7 +1055,7 @@ Sent from my iPhone`,
             'Send partial codes "to buy time."',
             'Partial disclosure still enables fraud.',
             3,
-            'imp'
+            'partial_codes'
           ),
         ],
       },
@@ -927,7 +1075,7 @@ Sent from my iPhone`,
             'Confront the scammer in chat to scare them.',
             'Engagement can leak more personal info.',
             4,
-            'exfil'
+            'scammer_engaged'
           ),
         ],
       },
@@ -935,19 +1083,19 @@ Sent from my iPhone`,
         stepNumber: 4,
         contextLabel: 'Verification channel',
         content:
-          'The attacker asks you to continue the conversation on a “private number” and avoid email “for confidentiality.”',
+          'The attacker asks you to continue the conversation on a "private number" and avoid email "for confidentiality."',
         isFinalStep: false,
         options: [
           right(
-            'Refuse and verify via your manager’s known work contact methods.',
+            'Refuse and verify via your manager\'s known work contact methods.',
             'Correct. Moving to private channels is a tactic to avoid oversight.',
             5
           ),
           wrong(
-            'Switch channels as requested to “help quickly.”',
+            'Switch channels as requested to "help quickly."',
             'Attackers isolate victims to reduce chances of being stopped.',
             5,
-            'imp'
+            'channel_switch'
           ),
         ],
       },
@@ -967,7 +1115,7 @@ Sent from my iPhone`,
             'Treat policy as optional if a senior person asks.',
             'Attackers rely on authority pressure to bypass policy.',
             6,
-            'imp'
+            'gift_card_sent'
           ),
         ],
       },
@@ -975,7 +1123,7 @@ Sent from my iPhone`,
         stepNumber: 6,
         contextLabel: 'Information request',
         content:
-          'They ask for your employee directory screenshot “to confirm you are authorized.”',
+          'They ask for your employee directory screenshot "to confirm you are authorized."',
         isFinalStep: false,
         options: [
           right(
@@ -984,10 +1132,10 @@ Sent from my iPhone`,
             7
           ),
           wrong(
-            'Send the screenshot since it doesn’t include passwords.',
+            'Send the screenshot since it doesn\'t include passwords.',
             'Internal structure and names can still be sensitive.',
             7,
-            'exfil'
+            'directory_leaked'
           ),
         ],
       },
@@ -995,7 +1143,7 @@ Sent from my iPhone`,
         stepNumber: 7,
         contextLabel: 'Team awareness',
         content:
-          'Security suggests a short training reminder: “gift card requests via messaging apps are high risk.”',
+          'Security suggests a short training reminder: "gift card requests via messaging apps are high risk."',
         isFinalStep: false,
         options: [
           right(
@@ -1004,10 +1152,10 @@ Sent from my iPhone`,
             8
           ),
           wrong(
-            'Ignore because “it only happened to you.”',
-            'Attackers target multiple employees; sharing helps the org.',
+            'Ignore because "it only happened to you."',
+            'Attackers target multiple employees simultaneously. Your silence puts your whole team at risk.',
             8,
-            'unauth'
+            'spread_ignored'
           ),
         ],
       },
@@ -1027,12 +1175,14 @@ Sent from my iPhone`,
             'Rely on quick texting for approvals in the future.',
             'Texting is easily spoofed; use trusted channels and approvals.',
             0,
-            'imp'
+            'gift_card_sent'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 6: Invoice Scam ─────────────────────────────────────────────
   {
     title: 'Vendor invoice with updated bank details',
     type: 'invoice_scam',
@@ -1044,15 +1194,7 @@ Sent from my iPhone`,
       {
         stepNumber: 1,
         contextLabel: 'Email',
-        content: `Subject: Updated banking for invoice INV-9931
-
-Please use the new account for payment processing starting today.
-
-New beneficiary: Apex Solutions Ltd
-IBAN: … (different country than usual)
-
-Thanks,
-Accounts Receivable`,
+        content: `Subject: Updated banking for invoice INV-9931\n\nPlease use the new account for payment processing starting today.\n\nNew beneficiary: Apex Solutions Ltd\nIBAN: … (different country than usual)\n\nThanks,\nAccounts Receivable`,
         isFinalStep: false,
         options: [
           right(
@@ -1065,7 +1207,7 @@ Accounts Receivable`,
             'Pay immediately to avoid late fees.',
             'You may have sent funds directly to criminals.',
             2,
-            'imp'
+            'invoice_paid'
           ),
         ],
       },
@@ -1085,7 +1227,7 @@ Accounts Receivable`,
             'Split the payment between old and new accounts "to be safe."',
             'Splitting still sends money to the fraudulent account.',
             3,
-            'imp'
+            'invoice_paid'
           ),
         ],
       },
@@ -1105,7 +1247,7 @@ Accounts Receivable`,
             'Trust future changes if the email looks nicely formatted.',
             'Visual polish does not equal authenticity.',
             4,
-            'phish'
+            'invoice_paid'
           ),
         ],
       },
@@ -1113,19 +1255,19 @@ Accounts Receivable`,
         stepNumber: 4,
         contextLabel: 'Second factor',
         content:
-          'The email requests you to confirm bank details by replying with the vendor’s tax ID and your internal cost center.',
+          'The email requests you to confirm bank details by replying with the vendor\'s tax ID and your internal cost center.',
         isFinalStep: false,
         options: [
           right(
             'Do not share internal finance details by email; verify via the vendor contact on file.',
-            'Correct. Attackers use “verification” prompts to harvest data.',
+            'Correct. Attackers use "verification" prompts to harvest data.',
             5
           ),
           wrong(
             'Reply with the details to speed up payment processing.',
             'That information can support future fraud or impersonation.',
             5,
-            'exfil'
+            'portal_leaked'
           ),
         ],
       },
@@ -1145,7 +1287,7 @@ Accounts Receivable`,
             'Proceed because the invoice number looks correct.',
             'Invoice numbers can be copied from prior emails or leaked documents.',
             6,
-            'imp'
+            'invoice_paid'
           ),
         ],
       },
@@ -1165,7 +1307,7 @@ Accounts Receivable`,
             'Assume the portal is outdated and pay anyway.',
             'Assuming systems are wrong is how fraud succeeds.',
             7,
-            'imp'
+            'invoice_paid'
           ),
         ],
       },
@@ -1185,7 +1327,7 @@ Accounts Receivable`,
             'Delete the email and move on to avoid paperwork.',
             'Skipping reporting increases risk of repeat attacks.',
             8,
-            'unauth'
+            'no_doc'
           ),
         ],
       },
@@ -1202,15 +1344,17 @@ Accounts Receivable`,
             0
           ),
           wrong(
-            'Accept bank changes by email if the message is “urgent.”',
+            'Accept bank changes by email if the message is "urgent."',
             'Urgency is commonly used to bypass controls.',
             0,
-            'imp'
+            'invoice_paid'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 7: LinkedIn Malware ─────────────────────────────────────────
   {
     title: 'LinkedIn recruiter — malware "portfolio" download',
     type: 'phishing',
@@ -1236,7 +1380,7 @@ Accounts Receivable`,
             'Download and open on your work machine to prepare.',
             'Malware often arrives as "documents."',
             2,
-            'malware'
+            'dl_malware'
           ),
         ],
       },
@@ -1256,7 +1400,7 @@ Accounts Receivable`,
             'Disable antivirus temporarily to open the file.',
             'Disabling protections is never appropriate for unknown files.',
             3,
-            'ransom'
+            'av_disabled_ransom'
           ),
         ],
       },
@@ -1296,7 +1440,7 @@ Accounts Receivable`,
             'Tell everyone the recruiter was "probably fine."',
             'Downplaying risk weakens vigilance.',
             5,
-            'phish'
+            'spread_ignored'
           ),
         ],
       },
@@ -1304,7 +1448,7 @@ Accounts Receivable`,
         stepNumber: 5,
         contextLabel: 'File host',
         content:
-          'They send a new link to a different file host and ask you to “disable SmartScreen if it warns.”',
+          'They send a new link to a different file host and ask you to "disable SmartScreen if it warns."',
         isFinalStep: false,
         options: [
           right(
@@ -1313,10 +1457,10 @@ Accounts Receivable`,
             6
           ),
           wrong(
-            'Disable protections to open the document “just once.”',
+            'Disable protections to open the document "just once."',
             'Disabling defenses increases the chance of compromise.',
             6,
-            'ransom'
+            'av_disabled_ransom'
           ),
         ],
       },
@@ -1324,7 +1468,7 @@ Accounts Receivable`,
         stepNumber: 6,
         contextLabel: 'Verification',
         content:
-          'You search the company name and find the official careers site uses a different domain than the recruiter’s email.',
+          'You search the company name and find the official careers site uses a different domain than the recruiter\'s email.',
         isFinalStep: false,
         options: [
           right(
@@ -1356,7 +1500,7 @@ Accounts Receivable`,
             'Use a personal device and then forward the file to work email.',
             'That still introduces risk and can spread malware.',
             8,
-            'malware'
+            'dl_malware'
           ),
         ],
       },
@@ -1373,15 +1517,17 @@ Accounts Receivable`,
             0
           ),
           wrong(
-            'Trust future requests if they include a simple password like “1234.”',
-            'Weak “password protection” is often used to make malware seem legitimate.',
+            'Trust future requests if they include a simple password like "1234."',
+            'Weak "password protection" is often used to make malware seem legitimate.',
             0,
-            'malware'
+            'dl_malware'
           ),
         ],
       },
     ],
   },
+
+  // ─── SCENARIO 8: SMS/Email Smishing Panic ─────────────────────────────────
   {
     title: 'Security audit panic: "Your account will be deleted"',
     type: 'mixed',
@@ -1407,7 +1553,7 @@ Accounts Receivable`,
             'Tap the link quickly on mobile to avoid losing access.',
             'You may have entered credentials into a phishing portal.',
             2,
-            'phish'
+            'smishing_creds'
           ),
         ],
       },
@@ -1464,10 +1610,10 @@ Accounts Receivable`,
             5
           ),
           wrong(
-            'Open it in an incognito window to “check.”',
+            'Open it in an incognito window to "check."',
             'Incognito does not prevent phishing or credential capture.',
             5,
-            'phish'
+            'smishing_creds'
           ),
         ],
       },
@@ -1485,9 +1631,9 @@ Accounts Receivable`,
           ),
           wrong(
             'Use the link in the SMS to reset password faster.',
-            'That link is likely the attacker’s portal.',
+            'That link is likely the attacker\'s portal.',
             6,
-            'phish'
+            'smishing_creds'
           ),
         ],
       },
@@ -1495,7 +1641,7 @@ Accounts Receivable`,
         stepNumber: 6,
         contextLabel: 'Device trust',
         content:
-          'Your account shows a “trusted device” you do not recognize.',
+          'Your account shows a "trusted device" you do not recognize.',
         isFinalStep: false,
         options: [
           right(
@@ -1504,10 +1650,10 @@ Accounts Receivable`,
             7
           ),
           wrong(
-            'Ignore it because it might be “a phone you used once.”',
+            'Ignore it because it might be "a phone you used once."',
             'Unknown devices should be treated as suspicious until verified.',
             7,
-            'unauth'
+            'unknown_device'
           ),
         ],
       },
@@ -1527,7 +1673,7 @@ Accounts Receivable`,
             'Forward the SMS to your personal phone group chat.',
             'Sharing outside approved channels can spread phishing links further.',
             8,
-            'unauth'
+            'sms_spread'
           ),
         ],
       },
@@ -1547,7 +1693,7 @@ Accounts Receivable`,
             'Treat SMS alerts as inherently trustworthy in the future.',
             'Attackers frequently use SMS due to higher click rates.',
             0,
-            'phish'
+            'smishing_creds'
           ),
         ],
       },
