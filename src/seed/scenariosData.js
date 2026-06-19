@@ -3,19 +3,20 @@
 const sim = {
   phish: {
     type: 'phishing_alert',
-    title: 'Account security alert',
+    title: 'Wrong',
     lines: [
-      'Your account has been compromised.',
+      'Success: Credentials Stolen.',
       'Unauthorized login detected from an unknown device.',
-      'Session tokens may have been stolen.',
+      
     ],
   },
   unauth: {
     type: 'unauthorized_login',
-    title: 'Unauthorized access detected',
+    title: 'Threat went uncontained',
     lines: [
-      'Multiple failed verification attempts.',
-      'Your credentials were used from a suspicious location.',
+      'The same suspicious login hit 3 of your colleagues within the next hour — none of them knew to watch for it.',
+      'IT couldn\'t investigate because no ticket was raised — the incident window closed before anyone acted.',
+      'Early security alerts are often early warning signs for the entire organization, not just you.',
     ],
   },
   lock: {
