@@ -1,6 +1,23 @@
 const Attempt = require('../models/Attempt');
 const User = require('../models/User');
-const { recommendDifficulty } = require('../services/gamification');
+const { recommendDifficulty, computeAchievementPoints } = require('../services/gamification');
+
+/**
+ * Real cross-user percentile, replacing the frontend's old cosmetic formula
+ * (12 + (1 - completion) * 28), which only used the caller's own badge count
+ * and never looked at other users at all.
+ */
+async function computeGlobalRank(myAchievementPoints) {
+  const allUsers = await User.find({}, 'earnedBadges').lean();
+  const allPoints = allUsers.map((u) => computeAchievementPoints(u.earnedBadges));
+  const totalUsers = allPoints.length;
+  if (totalUsers === 0) {
+    return { topPercentile: null, totalUsers: 0 };
+  }
+  const betterOrEqualCount = allPoints.filter((p) => p >= myAchievementPoints).length;
+  const topPercentile = Math.max(1, Math.round((betterOrEqualCount / totalUsers) * 100));
+  return { topPercentile, totalUsers };
+}
 
 async function myAnalytics(req, res) {
   const user = await User.findById(req.user._id).lean();
@@ -32,6 +49,8 @@ async function myAnalytics(req, res) {
   }
 
   const rec = recommendDifficulty(user.performanceSnapshot || []);
+  const achievementPoints = computeAchievementPoints(user.earnedBadges);
+  const globalRank = await computeGlobalRank(achievementPoints);
 
   return res.json({
     totalScore: user.totalScore,
@@ -41,6 +60,8 @@ async function myAnalytics(req, res) {
     totalCorrectDecisions: totalCorrect,
     totalDecisions,
     earnedBadges: user.earnedBadges || [],
+    achievementPoints,
+    globalRank,
     strengths,
     weaknesses,
     recommendation: rec,

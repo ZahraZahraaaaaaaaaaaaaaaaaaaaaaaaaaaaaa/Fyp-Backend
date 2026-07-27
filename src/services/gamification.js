@@ -11,6 +11,29 @@ const BADGES = {
   SECURITY_CHAMPION: 'security_champion',
 };
 
+/**
+ * Mirrors frontend/lib/badges/badge_catalog.dart `points` values exactly.
+ * Needed server-side so the global percentile rank can be computed for real
+ * (comparing achievement points across all registered users) instead of the
+ * badge-completion-only formula the UI used before.
+ */
+const BADGE_POINTS = {
+  [BADGES.AWARENESS_STARTER]: 180,
+  [BADGES.FIRST_SCENARIO]: 220,
+  [BADGES.PHISHING_DETECTOR]: 380,
+  [BADGES.VISHING_AWARE]: 360,
+  [BADGES.BAITING_BLOCKER]: 340,
+  [BADGES.IMPERSONATION_DEFENDER]: 420,
+  [BADGES.SAFE_STREAK]: 520,
+  [BADGES.PERFECT_SCORE]: 600,
+  [BADGES.SCENARIO_MASTER]: 760,
+  [BADGES.SECURITY_CHAMPION]: 900,
+};
+
+function computeAchievementPoints(earnedBadges) {
+  return (earnedBadges || []).reduce((sum, id) => sum + (BADGE_POINTS[id] || 0), 0);
+}
+
 function scoreToLevel(totalScore) {
   // Scoring is 5 points per correct decision; keep levels meaningful for demo pacing.
   if (totalScore < 50) return 1;
@@ -66,6 +89,22 @@ function evaluateBadges(user, context) {
   return [...badges];
 }
 
+/**
+ * Mirrors frontend/lib/screens/scenario_list_screen.dart _requiredLevelFor().
+ * Kept in one place server-side so /api/attempts/start can enforce it —
+ * the Flutter UI only hides the button, it does not stop a direct API call.
+ */
+function requiredLevelForDifficulty(difficulty) {
+  switch ((difficulty || '').toLowerCase()) {
+    case 'advanced':
+      return 5;
+    case 'intermediate':
+      return 3;
+    default:
+      return 1;
+  }
+}
+
 function recommendDifficulty(performanceSnapshot) {
   if (!performanceSnapshot || performanceSnapshot.length === 0) {
     return { suggested: 'beginner', reason: 'Start with beginner scenarios to build habits.' };
@@ -84,7 +123,10 @@ function recommendDifficulty(performanceSnapshot) {
 
 module.exports = {
   BADGES,
+  BADGE_POINTS,
   scoreToLevel,
   evaluateBadges,
   recommendDifficulty,
+  requiredLevelForDifficulty,
+  computeAchievementPoints,
 };

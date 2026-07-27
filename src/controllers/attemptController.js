@@ -2,7 +2,7 @@ const Attempt = require('../models/Attempt');
 const Scenario = require('../models/Scenario');
 const User = require('../models/User');
 const { getStepByNumber } = require('../services/scenarioHelpers');
-const { scoreToLevel, evaluateBadges } = require('../services/gamification');
+const { scoreToLevel, evaluateBadges, requiredLevelForDifficulty } = require('../services/gamification');
 const { notifyAfterAttemptComplete } = require('../services/notificationService');
 
 const POINTS_PER_CORRECT_DECISION = 5;
@@ -50,6 +50,17 @@ async function start(req, res) {
   const scenario = await Scenario.findById(scenarioId);
   if (!scenario || !scenario.isActive) {
     return res.status(404).json({ message: 'Scenario not available' });
+  }
+
+  if (req.user.role !== 'admin') {
+    const requiredLevel = requiredLevelForDifficulty(scenario.difficulty);
+    if ((req.user.level || 1) < requiredLevel) {
+      return res.status(403).json({
+        message: `This scenario unlocks at Level ${requiredLevel}. You are Level ${req.user.level || 1}.`,
+        requiredLevel,
+        currentLevel: req.user.level || 1,
+      });
+    }
   }
 
   const stepOrder = buildStepOrder(scenario);
