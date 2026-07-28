@@ -113,7 +113,7 @@ function recommendDifficulty(performanceSnapshot) {
   const avg =
     recent.reduce((s, p) => s + (p.accuracy || 0), 0) / Math.max(recent.length, 1);
   if (avg >= 0.85) {
-    return { suggested: 'advanced', reason: 'Strong recent accuracy — try advanced simulations.' };
+    return { suggested: 'advanced', reason: 'Strong recent accuracy — try advanced scenarios.' };
   }
   if (avg >= 0.6) {
     return { suggested: 'intermediate', reason: 'Solid progress — intermediate scenarios fit well.' };
